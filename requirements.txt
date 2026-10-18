@@ -1,0 +1,26 @@
+# --- Xử lý dữ liệu & Lưu trữ ---
+pandas>=2.0.0
+numpy>=1.24.0
+pyarrow>=14.0.0       # Hỗ trợ định dạng Parquet (nhẹ, nhanh hơn CSV)
+openpyxl>=3.1.0       # Đọc/ghi file Excel
+
+# --- Trực quan hóa dữ liệu ---
+matplotlib>=3.7.0
+seaborn>=0.12.0
+
+# --- Khai thác dữ liệu, Phân cụm & Machine Learning ---
+scikit-learn>=1.3.0
+scipy>=1.11.0
+yellowbrick>=1.5      # Hỗ trợ chọn số cụm tối ưu (Elbow, Silhouette plot)
+
+# --- Xử lý ngôn ngữ tự nhiên (NLP cho đánh giá tiếng Bồ Đào Nha) ---
+nltk>=3.8.1
+wordcloud>=1.9.0
+
+# --- Giải thích mô hình & Bảng điều khiển tương tác ---
+shap>=0.42.0
+streamlit>=1.28.0
+
+# --- Môi trường làm việc Jupyter Notebook ---
+ipykernel>=6.25.0
+jupyterlab>=4.0.0
