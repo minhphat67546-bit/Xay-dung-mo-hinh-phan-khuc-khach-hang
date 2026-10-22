@@ -1,0 +1,5 @@
+cluster,recency,frequency,monetary,avg_order_value,avg_delivery_duration_days,delayed_order_ratio,avg_review_score,freight_ratio,max_payment_installments,customer_count,customer_pct
+0,238.87,1.0,63.23,63.23,10.52,0.03,4.34,0.29,1.73,41790,44.77
+1,239.67,1.0,251.95,251.95,11.72,0.03,4.24,0.13,4.01,43602,46.71
+2,220.3,2.11,309.22,146.17,12.1,0.06,4.24,0.2,4.08,2775,2.97
+3,225.52,1.01,179.94,179.33,36.53,1.0,1.96,0.21,3.07,5183,5.55

@@ -21,6 +21,8 @@ data/raw/*
 data/processed/*
 !data/processed/.gitkeep
 !data/processed/olist_clean.parquet
+!data/processed/olist_clustered.parquet
+!data/processed/experience_features.csv
 
 # Excel temporary / lock files
 ~$*.xlsx
