@@ -20,6 +20,7 @@ data/raw/*
 !data/raw/.gitkeep
 data/processed/*
 !data/processed/.gitkeep
+!data/processed/olist_clean.parquet
 
 # Excel temporary / lock files
 ~$*.xlsx
