@@ -26,6 +26,8 @@ data/processed/*
 
 # Excel temporary / lock files
 ~$*.xlsx
+~$*.docx
+~$*.doc
 ~$*.xls
 
 # Model weights & large artifacts
