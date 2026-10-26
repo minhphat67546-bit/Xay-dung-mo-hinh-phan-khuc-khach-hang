@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Olist E-Commerce Customer Segmentation Dashboard</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- FontAwesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    .glass-card {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border: 1px solid #e2e8f0;
+      border-radius: 14px;
+    }
+    .active-tab {
+      background: #1679AB !important;
+      color: white !important;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased min-h-screen flex flex-col">
+
+  <!-- TOP NAVBAR -->
+  <header class="bg-[#102C57] text-white sticky top-0 z-50 shadow-md">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex justify-between items-center">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#1679AB] to-[#4ECDC4] flex items-center justify-center text-white shadow-lg">
+          <i class="fa-solid fa-store text-lg"></i>
+        </div>
+        <div>
+          <h1 class="font-bold text-lg leading-tight tracking-wide">OLIST CUSTOMER SEGMENTATION</h1>
+          <p class="text-xs text-sky-200">Đồ án Khai thác Dữ liệu • Nhóm Olist - Khoa CNTT HUIT</p>
+        </div>
+      </div>
+      <div class="flex items-center space-x-3 text-xs">
+        <span class="bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 px-3 py-1 rounded-full font-semibold flex items-center">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse mr-2"></span>
+          Dataset: 93,350 Customers
+        </span>
+        <a href="http://localhost:8501" target="_blank" class="bg-[#1679AB] hover:bg-sky-600 px-3 py-1.5 rounded-lg text-white font-medium flex items-center transition shadow">
+          <i class="fa-solid fa-server mr-1.5"></i> Streamlit App (:8501)
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN WRAPPER -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full flex-1">
+    
+    <!-- NAVIGATION TABS -->
+    <div class="flex flex-wrap gap-2 mb-6 border-b border-slate-200 pb-3">
+      <button onclick="switchTab('tab-overview')" id="btn-tab-overview" class="active-tab px-4 py-2.5 rounded-xl font-semibold text-sm transition flex items-center bg-white text-slate-700 shadow-sm border border-slate-200 hover:bg-slate-100">
+        <i class="fa-solid fa-chart-pie mr-2"></i> 1. Tổng quan & KPIs
+      </button>
+      <button onclick="switchTab('tab-clusters')" id="btn-tab-clusters" class="px-4 py-2.5 rounded-xl font-semibold text-sm transition flex items-center bg-white text-slate-700 shadow-sm border border-slate-200 hover:bg-slate-100">
+        <i class="fa-solid fa-users mr-2"></i> 2. Chân dung 4 Phân khúc
+      </button>
+      <button onclick="switchTab('tab-lookup')" id="btn-tab-lookup" class="px-4 py-2.5 rounded-xl font-semibold text-sm transition flex items-center bg-white text-slate-700 shadow-sm border border-slate-200 hover:bg-slate-100">
+        <i class="fa-solid fa-id-card mr-2"></i> 3. Tra cứu Khách hàng
+      </button>
+      <button onclick="switchTab('tab-ml')" id="btn-tab-ml" class="px-4 py-2.5 rounded-xl font-semibold text-sm transition flex items-center bg-white text-slate-700 shadow-sm border border-slate-200 hover:bg-slate-100">
+        <i class="fa-solid fa-robot mr-2"></i> 4. Phân loại Khách mới (Live ML)
+      </button>
+      <button onclick="switchTab('tab-whatif')" id="btn-tab-whatif" class="px-4 py-2.5 rounded-xl font-semibold text-sm transition flex items-center bg-white text-slate-700 shadow-sm border border-slate-200 hover:bg-slate-100">
+        <i class="fa-solid fa-sliders mr-2"></i> 5. Mô phỏng Kịch bản (What-If)
+      </button>
+    </div>
+
+    <!-- ==================================================== -->
+    <!-- TAB 1: TỔNG QUAN & KPIS -->
+    <!-- ==================================================== -->
+    <div id="tab-overview" class="space-y-6">
+      <!-- 4 TOP KPIS -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="glass-card p-5 border-l-4 border-l-[#1679AB] shadow-sm">
+          <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">Tổng Khách Hàng</div>
+          <div class="text-3xl font-extrabold text-slate-800 mt-1">93,350</div>
+          <div class="text-xs font-semibold text-emerald-600 mt-1 flex items-center">
+            <i class="fa-solid fa-check-circle mr-1"></i> 100% Khách duy nhất sau làm sạch
+          </div>
+        </div>
+        <div class="glass-card p-5 border-l-4 border-l-[#5F27CD] shadow-sm">
+          <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">Tổng Doanh Thu (GMV)</div>
+          <div class="text-3xl font-extrabold text-slate-800 mt-1">14.2M BRL</div>
+          <div class="text-xs font-semibold text-sky-600 mt-1 flex items-center">
+            <i class="fa-solid fa-coins mr-1"></i> ~ 71 Tỷ VNĐ (2016-2018)
+          </div>
+        </div>
+        <div class="glass-card p-5 border-l-4 border-l-[#EE5253] shadow-sm">
+          <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">Tỷ Lệ Giao Trễ Sàn</div>
+          <div class="text-3xl font-extrabold text-[#EE5253] mt-1">6.77%</div>
+          <div class="text-xs font-semibold text-rose-500 mt-1 flex items-center">
+            <i class="fa-solid fa-triangle-exclamation mr-1"></i> 6,534 đơn bị ảnh hưởng
+          </div>
+        </div>
+        <div class="glass-card p-5 border-l-4 border-l-[#10AC84] shadow-sm">
+          <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">Số Cụm Tối Ưu</div>
+          <div class="text-3xl font-extrabold text-[#10AC84] mt-1">k = 4 Cụm</div>
+          <div class="text-xs font-semibold text-emerald-600 mt-1 flex items-center">
+            <i class="fa-solid fa-award mr-1"></i> Silhouette Score: 0.2413 (Đỉnh cao nhất)
+          </div>
+        </div>
+      </div>
+
+      <!-- CHARTS ROW 1 -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <!-- Donut Chart -->
+        <div class="lg:col-span-5 glass-card p-5 shadow-sm">
+          <h3 class="font-bold text-slate-800 text-base mb-1 flex items-center">
+            <i class="fa-solid fa-chart-pie mr-2 text-[#1679AB]"></i> Cơ cấu Tỷ trọng 4 Phân khúc
+          </h3>
+          <p class="text-xs text-slate-500 mb-4">Phân bố 93,350 khách hàng theo nhãn phân cụm K-Means</p>
+          <div class="relative h-64 flex items-center justify-center">
+            <canvas id="donutChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Bar Comparison -->
+        <div class="lg:col-span-7 glass-card p-5 shadow-sm">
+          <h3 class="font-bold text-slate-800 text-base mb-1 flex items-center">
+            <i class="fa-solid fa-chart-column mr-2 text-[#5F27CD]"></i> So sánh Chi tiêu Trung bình & Tỷ lệ Phí Ship
+          </h3>
+          <p class="text-xs text-slate-500 mb-4">Mối tương quan giữa giá trị đơn hàng và gánh nặng chi phí vận chuyển</p>
+          <div class="relative h-64">
+            <canvas id="barCompareChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- CHARTS ROW 2: RADAR CHART -->
+      <div class="glass-card p-6 shadow-sm">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4">
+          <div>
+            <h3 class="font-bold text-slate-800 text-base flex items-center">
+              <i class="fa-solid fa-spider mr-2 text-indigo-600"></i> Biểu đồ Radar So sánh Đa Chiều 4 Phân Khúc
+            </h3>
+            <p class="text-xs text-slate-500">Chuẩn hóa theo thang điểm 0 - 100 trên 6 trục chỉ số cốt lõi (RFM + Delivery + Service)</p>
+          </div>
+          <div class="flex flex-wrap gap-2 mt-2 sm:mt-0 text-xs font-semibold">
+            <span class="inline-flex items-center px-2.5 py-1 rounded-full bg-amber-100 text-amber-800"><span class="w-2 h-2 rounded-full bg-[#FF9F43] mr-1.5"></span>Freight-Sensitive</span>
+            <span class="inline-flex items-center px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800"><span class="w-2 h-2 rounded-full bg-[#10AC84] mr-1.5"></span>Mainstream</span>
+            <span class="inline-flex items-center px-2.5 py-1 rounded-full bg-purple-100 text-purple-800"><span class="w-2 h-2 rounded-full bg-[#5F27CD] mr-1.5"></span>VIP Champions</span>
+            <span class="inline-flex items-center px-2.5 py-1 rounded-full bg-rose-100 text-rose-800"><span class="w-2 h-2 rounded-full bg-[#EE5253] mr-1.5"></span>At-Risk Delivery</span>
+          </div>
+        </div>
+        <div class="relative h-80 flex items-center justify-center">
+          <canvas id="radarChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================================================== -->
+    <!-- TAB 2: CHÂN DUNG 4 PHÂN KHÚC -->
+    <!-- ==================================================== -->
+    <div id="tab-clusters" class="hidden space-y-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        
+        <!-- CARD 1: FREIGHT SENSITIVE -->
+        <div class="glass-card p-6 border-t-4 border-t-[#FF9F43] shadow-sm hover:shadow-md transition">
+          <div class="flex justify-between items-start">
+            <div>
+              <span class="bg-amber-100 text-[#FF9F43] font-bold text-xs px-2.5 py-1 rounded-full uppercase">Cụm 0 • 44.8% Quy mô</span>
+              <h3 class="text-xl font-bold text-slate-800 mt-2">📦 Freight-Sensitive (Nhạy cảm Phí ship)</h3>
+            </div>
+            <div class="text-right">
+              <span class="text-2xl font-black text-slate-800">41,790</span>
+              <span class="block text-xs text-slate-400">khách hàng</span>
+            </div>
+          </div>
+          <p class="text-sm text-slate-600 mt-3 leading-relaxed">
+            Mua đơn hàng giá trị nhỏ (63.23 BRL) nhưng gánh tỷ lệ phí vận chuyển rất cao (~28.8% giá trị đơn). Rất hài lòng khi giao đúng hạn (4.34 sao) nhưng dễ rời bỏ sàn vì phí ship là rào cản lớn nhất.
+          </p>
+          <div class="grid grid-cols-3 gap-2 mt-4 bg-slate-50 p-3 rounded-xl border border-slate-100 text-center text-xs">
+            <div><span class="text-slate-400 block">Chi tiêu TB</span><b class="text-slate-700 text-sm">63.2 BRL</b></div>
+            <div><span class="text-slate-400 block">Tỷ lệ Ship</span><b class="text-amber-600 text-sm">28.8%</b></div>
+            <div><span class="text-slate-400 block">Điểm Review</span><b class="text-emerald-600 text-sm">4.34 ⭐</b></div>
+          </div>
+          <div class="mt-4 pt-4 border-t border-slate-100 space-y-2 text-xs">
+            <p><b class="text-sky-700">📢 Tiếp thị:</b> Tặng Voucher FreeShip cho đơn từ 99 BRL; Gom đơn cùng shop.</p>
+            <p><b class="text-emerald-700">🚚 Vận hành:</b> Tối ưu gom chuyến (order batching) và mở rộng kho tại SP, MG.</p>
+          </div>
+        </div>
+
+        <!-- CARD 2: SATISFIED MAINSTREAM -->
+        <div class="glass-card p-6 border-t-4 border-t-[#10AC84] shadow-sm hover:shadow-md transition">
+          <div class="flex justify-between items-start">
+            <div>
+              <span class="bg-emerald-100 text-[#10AC84] font-bold text-xs px-2.5 py-1 rounded-full uppercase">Cụm 1 • 46.7% Quy mô</span>
+              <h3 class="text-xl font-bold text-slate-800 mt-2">🛒 Satisfied Mainstream (Phổ thông Hài lòng)</h3>
+            </div>
+            <div class="text-right">
+              <span class="text-2xl font-black text-slate-800">43,602</span>
+              <span class="block text-xs text-slate-400">khách hàng</span>
+            </div>
+          </div>
+          <p class="text-sm text-slate-600 mt-3 leading-relaxed">
+            Lực lượng nòng cốt chiếm gần nửa sàn Olist. Chi tiêu vừa phải (251.95 BRL), phí ship hợp lý (13.2%), trải nghiệm logistics xuất sắc với 0% trễ hẹn nghiêm trọng. Chuộng trả góp qua thẻ tín dụng (4 kỳ).
+          </p>
+          <div class="grid grid-cols-3 gap-2 mt-4 bg-slate-50 p-3 rounded-xl border border-slate-100 text-center text-xs">
+            <div><span class="text-slate-400 block">Chi tiêu TB</span><b class="text-slate-700 text-sm">252.0 BRL</b></div>
+            <div><span class="text-slate-400 block">Tỷ lệ Ship</span><b class="text-slate-700 text-sm">13.2%</b></div>
+            <div><span class="text-slate-400 block">Điểm Review</span><b class="text-emerald-600 text-sm">4.24 ⭐</b></div>
+          </div>
+          <div class="mt-4 pt-4 border-t border-slate-100 space-y-2 text-xs">
+            <p><b class="text-sky-700">📢 Tiếp thị:</b> Chương trình tích điểm thành viên, kích thích mua lặp lại qua email & app push.</p>
+            <p><b class="text-emerald-700">🚚 Vận hành:</b> Duy trì chuẩn SLA giao hàng dưới 12 ngày, tích hợp bảo hiểm vận chuyển.</p>
+          </div>
+        </div>
+
+        <!-- CARD 3: VIP CHAMPIONS -->
+        <div class="glass-card p-6 border-t-4 border-t-[#5F27CD] shadow-sm hover:shadow-md transition">
+          <div class="flex justify-between items-start">
+            <div>
+              <span class="bg-purple-100 text-[#5F27CD] font-bold text-xs px-2.5 py-1 rounded-full uppercase">Cụm 2 • 3.0% Quy mô</span>
+              <h3 class="text-xl font-bold text-slate-800 mt-2">💎 VIP Champions (Chi tiêu cao & Trung thành)</h3>
+            </div>
+            <div class="text-right">
+              <span class="text-2xl font-black text-slate-800">2,775</span>
+              <span class="block text-xs text-slate-400">khách hàng</span>
+            </div>
+          </div>
+          <p class="text-sm text-slate-600 mt-3 leading-relaxed">
+            Khách hàng tinh hoa mang lại doanh thu cao nhất, có tần suất mua lặp lại cao nhất toàn sàn (2.11 đơn/khách, gấp đôi mức bình quân). Tương tác mua hàng gần đây nhất (220 ngày) và độ hài lòng cao (4.24 sao).
+          </p>
+          <div class="grid grid-cols-3 gap-2 mt-4 bg-slate-50 p-3 rounded-xl border border-slate-100 text-center text-xs">
+            <div><span class="text-slate-400 block">Chi tiêu TB</span><b class="text-[#5F27CD] text-sm">309.2 BRL</b></div>
+            <div><span class="text-slate-400 block">Tần suất mua</span><b class="text-[#5F27CD] text-sm">2.11 đơn</b></div>
+            <div><span class="text-slate-400 block">Điểm Review</span><b class="text-emerald-600 text-sm">4.24 ⭐</b></div>
+          </div>
+          <div class="mt-4 pt-4 border-t border-slate-100 space-y-2 text-xs">
+            <p><b class="text-sky-700">📢 Tiếp thị:</b> Gói hội viên ưu tiên Olist Prime VIP, tiếp cận sự kiện Flash Sale độc quyền.</p>
+            <p><b class="text-emerald-700">🚚 Vận hành:</b> Luồng xử lý đóng gói nhanh (Express line), bồi thường tự động nếu chậm trễ.</p>
+          </div>
+        </div>
+
+        <!-- CARD 4: AT-RISK DELIVERY -->
+        <div class="glass-card p-6 border-t-4 border-t-[#EE5253] shadow-sm hover:shadow-md transition">
+          <div class="flex justify-between items-start">
+            <div>
+              <span class="bg-rose-100 text-[#EE5253] font-bold text-xs px-2.5 py-1 rounded-full uppercase">Cụm 3 • 5.5% Quy mô</span>
+              <h3 class="text-xl font-bold text-slate-800 mt-2">⚠️ At-Risk Delivery (Rủi ro Giao trễ)</h3>
+            </div>
+            <div class="text-right">
+              <span class="text-2xl font-black text-rose-600">5,183</span>
+              <span class="block text-xs text-slate-400">khách hàng</span>
+            </div>
+          </div>
+          <p class="text-sm text-slate-600 mt-3 leading-relaxed">
+            Phân khúc chịu tổn thương dịch vụ nghiêm trọng nhất với 100% đơn hàng bị giao trễ hẹn, thời gian nhận hàng kéo dài trung bình 36.5 ngày (hơn 1 tháng). Điểm review chạm đáy 1.96 sao, nguy cơ rời bỏ vĩnh viễn.
+          </p>
+          <div class="grid grid-cols-3 gap-2 mt-4 bg-slate-50 p-3 rounded-xl border border-slate-100 text-center text-xs">
+            <div><span class="text-slate-400 block">Chi tiêu TB</span><b class="text-slate-700 text-sm">179.9 BRL</b></div>
+            <div><span class="text-slate-400 block">Giao hàng TB</span><b class="text-rose-600 text-sm">36.5 ngày</b></div>
+            <div><span class="text-slate-400 block">Điểm Review</span><b class="text-rose-600 text-sm">1.96 ⭐</b></div>
+          </div>
+          <div class="mt-4 pt-4 border-t border-slate-100 space-y-2 text-xs">
+            <p><b class="text-sky-700">📢 Tiếp thị:</b> Thư xin lỗi từ Ban giám đốc kèm Voucher bồi hoàn vô điều kiện 30-50 BRL.</p>
+            <p><b class="text-emerald-700">🚚 Vận hành:</b> Đình chỉ và tái đào tạo đối tác 3PL khu vực Rio de Janeiro; Cảnh báo trễ > 3 ngày.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ==================================================== -->
+    <!-- TAB 3: TRA CỨU HỒ SƠ KHÁCH HÀNG -->
+    <!-- ==================================================== -->
+    <div id="tab-lookup" class="hidden space-y-6">
+      <div class="glass-card p-6 shadow-sm">
+        <h3 class="font-bold text-slate-800 text-lg mb-2 flex items-center">
+          <i class="fa-solid fa-search mr-2 text-[#1679AB]"></i> Tra cứu Hồ sơ & Sức khỏe Khách hàng
+        </h3>
+        <p class="text-xs text-slate-500 mb-4">Chọn khách hàng mẫu đại diện theo từng phân khúc hoặc nhập ID trực tiếp:</p>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Chọn mẫu nhanh từ 4 Cụm:</label>
+            <select id="quickSelect" onchange="loadSampleCustomer(this.value)" class="w-full border border-slate-300 rounded-xl p-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#1679AB]">
+              <option value="cust_vip">💎 VIP Champion: 3 đơn hàng, chi 890 BRL, 5.0 sao</option>
+              <option value="cust_main">🛒 Phổ thông hài lòng: 1 đơn, 250 BRL, giao 8 ngày, 5.0 sao</option>
+              <option value="cust_freight">📦 Nhạy cảm phí ship: Đơn 45 BRL, phí ship 18 BRL (40%)</option>
+              <option value="cust_risk">⚠️ Khách hàng giao trễ: Giao 42 ngày, trễ 15 ngày, review 1 sao</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Hoặc nhập mã Customer Unique ID:</label>
+            <div class="flex gap-2">
+              <input type="text" id="inputCustId" value="8d50f5eadf50201ccdcedfb9e2ac8455" class="flex-1 border border-slate-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1679AB]">
+              <button onclick="searchCustomCustomer()" class="bg-[#1679AB] hover:bg-sky-700 text-white px-5 py-2 rounded-xl text-sm font-semibold transition">
+                Tra cứu
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- RESULT CARD -->
+        <div id="custCard" class="mt-6 pt-6 border-t border-slate-200 grid grid-cols-1 md:grid-cols-12 gap-6">
+          <div class="md:col-span-7 bg-slate-50 p-5 rounded-xl border border-slate-200">
+            <div class="flex justify-between items-center mb-3">
+              <span id="custBadge" class="bg-purple-100 text-[#5F27CD] px-3 py-1 rounded-full text-xs font-bold">
+                💎 Cụm 2: VIP Champions
+              </span>
+              <span id="custLocation" class="text-xs text-slate-500 font-medium">Bang: SP (São Paulo)</span>
+            </div>
+            <div class="text-xs font-mono text-slate-500 truncate" id="cardCustId">ID: 8d50f5eadf50201ccdcedfb9e2ac8455</div>
+            <div class="grid grid-cols-2 gap-3 mt-4 text-xs">
+              <div class="bg-white p-2.5 rounded-lg border border-slate-200">
+                <span class="text-slate-400 block">Tổng Chi Tiêu:</span>
+                <b id="cardMonetary" class="text-base text-slate-800">890.00 BRL</b>
+              </div>
+              <div class="bg-white p-2.5 rounded-lg border border-slate-200">
+                <span class="text-slate-400 block">Số Đơn Hàng:</span>
+                <b id="cardFreq" class="text-base text-slate-800">3 đơn hàng</b>
+              </div>
+              <div class="bg-white p-2.5 rounded-lg border border-slate-200">
+                <span class="text-slate-400 block">Thời Gian Giao:</span>
+                <b id="cardDelivery" class="text-base text-slate-800">11.0 ngày</b>
+              </div>
+              <div class="bg-white p-2.5 rounded-lg border border-slate-200">
+                <span class="text-slate-400 block">Đánh Giá Review:</span>
+                <b id="cardReview" class="text-base text-emerald-600">5.0 ⭐ (Hài lòng)</b>
+              </div>
+            </div>
+          </div>
+
+          <div class="md:col-span-5 bg-white p-5 rounded-xl border border-slate-200 flex flex-col justify-between">
+            <div>
+              <div class="text-xs font-bold uppercase text-slate-400 mb-1">Chỉ số Sức khỏe Khách hàng (Health Score)</div>
+              <div class="flex items-center space-x-3 mt-2">
+                <div id="cardScoreNum" class="text-4xl font-extrabold text-[#5F27CD]">95/100</div>
+                <div class="text-xs text-slate-500">
+                  <span id="cardStatus" class="font-bold text-emerald-600">Tuyệt vời</span>
+                  <p class="text-[11px] text-slate-400">Rủi ro rời bỏ sàn cực thấp</p>
+                </div>
+              </div>
+              <div class="w-full bg-slate-100 rounded-full h-2.5 mt-3">
+                <div id="cardProgressBar" class="bg-[#5F27CD] h-2.5 rounded-full" style="width: 95%"></div>
+              </div>
+            </div>
+            <div class="mt-4 pt-3 border-t border-slate-100">
+              <b class="text-xs text-slate-700 block mb-1">Gợi ý Hành động Tác nghiệp:</b>
+              <p id="cardAction" class="text-xs text-slate-500">Gửi lời tri ân Olist Prime VIP kèm mã ưu đãi hoàn tiền 10% cho kỳ mua sắm kế tiếp.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================================================== -->
+    <!-- TAB 4: PHÂN LOẠI KHÁCH HÀNG MỚI (LIVE ML) -->
+    <!-- ==================================================== -->
+    <div id="tab-ml" class="hidden space-y-6">
+      <div class="glass-card p-6 shadow-sm">
+        <h3 class="font-bold text-slate-800 text-lg mb-2 flex items-center">
+          <i class="fa-solid fa-microchip mr-2 text-[#10AC84]"></i> Phân Loại Khách Hàng Mới bằng Thuật toán K-Means
+        </h3>
+        <p class="text-xs text-slate-500 mb-6">Nhập thông tin giao dịch của khách hàng để tính toán khoảng cách Euclidean đến các tâm cụm:</p>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div class="space-y-4">
+            <div>
+              <label class="block text-xs font-bold text-slate-600 mb-1">Tổng tiền chi tiêu (Monetary BRL):</label>
+              <input type="number" id="mlMonetary" value="180" class="w-full border border-slate-300 rounded-xl p-2.5 text-sm">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-600 mb-1">Số lượng đơn hàng (Frequency):</label>
+              <input type="number" id="mlFreq" value="1" min="1" max="15" class="w-full border border-slate-300 rounded-xl p-2.5 text-sm">
+            </div>
+          </div>
+
+          <div class="space-y-4">
+            <div>
+              <label class="block text-xs font-bold text-slate-600 mb-1">Thời gian giao hàng (ngày):</label>
+              <input type="number" id="mlDelivery" value="12" class="w-full border border-slate-300 rounded-xl p-2.5 text-sm">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-600 mb-1">Tỷ lệ phí ship / Giá trị đơn (%):</label>
+              <input type="number" id="mlFreight" value="15" class="w-full border border-slate-300 rounded-xl p-2.5 text-sm">
+            </div>
+          </div>
+
+          <div class="space-y-4">
+            <div>
+              <label class="block text-xs font-bold text-slate-600 mb-1">Đơn hàng có bị trễ hẹn không?</label>
+              <select id="mlDelay" class="w-full border border-slate-300 rounded-xl p-2.5 text-sm bg-white">
+                <option value="0">Không - Giao đúng hẹn</option>
+                <option value="1">Có - Bị giao trễ hẹn</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-600 mb-1">Điểm review đánh giá (Sao):</label>
+              <select id="mlReview" class="w-full border border-slate-300 rounded-xl p-2.5 text-sm bg-white">
+                <option value="5">5 Sao (Rất tốt)</option>
+                <option value="4">4 Sao (Tốt)</option>
+                <option value="3">3 Sao (Bình thường)</option>
+                <option value="2">2 Sao (Kém)</option>
+                <option value="1">1 Sao (Rất tệ)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-6">
+          <button onclick="runClassification()" class="w-full bg-[#10AC84] hover:bg-emerald-600 text-white font-bold py-3 px-6 rounded-xl text-sm transition flex items-center justify-center shadow-md">
+            <i class="fa-solid fa-bolt mr-2"></i> THỰC HIỆN PHÂN LOẠI PHÂN KHÚC NGAY
+          </button>
+        </div>
+
+        <!-- PREDICTION RESULT -->
+        <div id="mlResultBox" class="mt-6 p-5 rounded-xl border border-emerald-300 bg-emerald-50 hidden">
+          <div class="flex items-center space-x-3">
+            <div id="mlResultIcon" class="text-3xl">🛒</div>
+            <div>
+              <span class="text-xs font-bold uppercase text-emerald-700 tracking-wider">KẾT QUẢ DỰ BÁO K-MEANS:</span>
+              <h4 id="mlResultTitle" class="text-xl font-bold text-slate-800">Cụm 1: Satisfied Mainstream (Khách hàng Phổ thông Hài lòng)</h4>
+              <p id="mlResultDesc" class="text-xs text-slate-600 mt-1">Độ tin cậy mô hình: 91.4% • Trạng thái: Hài lòng với dịch vụ giao hàng chuẩn.</p>
+            </div>
+          </div>
+          <div class="mt-3 pt-3 border-t border-emerald-200 text-xs text-slate-700">
+            <b>Chính sách tiếp thị đề xuất:</b> <span id="mlResultMarketing">Áp dụng chương trình tích điểm thưởng và gửi gợi ý sản phẩm liên quan.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================================================== -->
+    <!-- TAB 5: MÔ PHỎNG KỊCH BẢN (WHAT-IF) -->
+    <!-- ==================================================== -->
+    <div id="tab-whatif" class="hidden space-y-6">
+      <div class="glass-card p-6 shadow-sm">
+        <h3 class="font-bold text-slate-800 text-lg mb-1 flex items-center">
+          <i class="fa-solid fa-sliders mr-2 text-indigo-600"></i> Mô phỏng Kịch bản Kinh doanh Thời gian thực (What-If Analysis)
+        </h3>
+        <p class="text-xs text-slate-500 mb-6">Mô phỏng tác động tài chính và độ hài lòng khi điều chỉnh chính sách Trợ giá ship hoặc Rút ngắn SLA giao hàng:</p>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 bg-slate-50 p-6 rounded-xl border border-slate-200">
+          <div>
+            <div class="flex justify-between items-center mb-2">
+              <label class="text-xs font-bold text-slate-700 uppercase">Mức Trợ giá Phí vận chuyển (Freight Discount %):</label>
+              <span id="sliderValDiscount" class="text-base font-extrabold text-[#1679AB]">20%</span>
+            </div>
+            <input type="range" id="sliderDiscount" min="0" max="50" step="5" value="20" oninput="updateSimulation()" class="w-full accent-[#1679AB] h-2 bg-slate-200 rounded-lg cursor-pointer">
+            <span class="text-[11px] text-slate-400 block mt-1">Tác động chủ yếu tới 41,790 khách nhóm Freight-Sensitive</span>
+          </div>
+
+          <div>
+            <div class="flex justify-between items-center mb-2">
+              <label class="text-xs font-bold text-slate-700 uppercase">Rút ngắn Thời gian Giao hàng (SLA Improvement - Ngày):</label>
+              <span id="sliderValSLA" class="text-base font-extrabold text-emerald-600">5 ngày</span>
+            </div>
+            <input type="range" id="sliderSLA" min="0" max="15" step="1" value="5" oninput="updateSimulation()" class="w-full accent-emerald-600 h-2 bg-slate-200 rounded-lg cursor-pointer">
+            <span class="text-[11px] text-slate-400 block mt-1">Tác động chủ yếu cứu vãn 5,183 khách nhóm At-Risk Delivery</span>
+          </div>
+        </div>
+
+        <!-- SIMULATION OUTPUT CARDS -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
+          <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center">
+            <span class="text-xs font-bold text-slate-400 uppercase block">Khách Chuyển đổi Mua Lại</span>
+            <span id="simConverted" class="text-2xl font-extrabold text-slate-800 block mt-1">+5,014 khách</span>
+            <span class="text-[11px] text-emerald-600 font-semibold">+12.0% nhóm Phí ship</span>
+          </div>
+          <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center">
+            <span class="text-xs font-bold text-slate-400 uppercase block">Cứu Khỏi Nguy Cơ Rời Bỏ</span>
+            <span id="simSaved" class="text-2xl font-extrabold text-emerald-600 block mt-1">+1,123 khách</span>
+            <span class="text-[11px] text-emerald-600 font-semibold">Giảm 21.7% nhóm At-Risk</span>
+          </div>
+          <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center">
+            <span class="text-xs font-bold text-slate-400 uppercase block">Điểm CSAT Toàn Sàn</span>
+            <span id="simCSAT" class="text-2xl font-extrabold text-amber-500 block mt-1">4.43 ⭐</span>
+            <span class="text-[11px] text-amber-600 font-semibold">+0.28 sao tăng thêm</span>
+          </div>
+          <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center">
+            <span class="text-xs font-bold text-slate-400 uppercase block">Doanh Thu Tăng Thêm</span>
+            <span id="simRevenue" class="text-2xl font-extrabold text-[#5F27CD] block mt-1">+954,174 BRL</span>
+            <span class="text-[11px] text-purple-600 font-semibold">~ 4.77 Tỷ VNĐ</span>
+          </div>
+        </div>
+
+        <div class="mt-6 p-4 rounded-xl bg-blue-50/70 border border-blue-200 text-xs text-slate-700 leading-relaxed">
+          <b class="text-sky-900 block text-sm mb-1">📌 Đánh giá Tính Khả thi từ Ban Cố vấn:</b>
+          Chính sách trợ giá 20% phí vận chuyển kết hợp cải thiện 5 ngày giao hàng giúp sàn Olist giữ chân thành công hàng ngàn khách hàng có giá trị vòng đời cao. Mô hình hoàn toàn có thể áp dụng thực tiễn cho các nền tảng thương mại điện tử Việt Nam (Tiki, Shopee, Lazada) khi thiết kế các chiến dịch "Freeship Extra" kết hợp thỏa thuận cam kết SLA với đối tác giao vận 3PL (GHTK, GHN, Viettel Post).
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="bg-white border-t border-slate-200 py-4 mt-auto text-center text-xs text-slate-500">
+    <p>Đồ án Môn học: Khai thác Dữ liệu • Khoa Công nghệ Thông tin - Trường Đại học Công Thương TP.HCM (HUIT)</p>
+    <p class="text-slate-400 mt-1">Thành viên: Trần Duy Minh Phát (A) • Huỳnh Bổ Bửu Quang (B) • Phạm Quốc Ân (C)</p>
+  </footer>
+
+  <!-- JAVASCRIPT LOGIC & CHARTS -->
+  <script>
+    // TAB SWITCHER
+    function switchTab(tabId) {
+      const tabs = ['tab-overview', 'tab-clusters', 'tab-lookup', 'tab-ml', 'tab-whatif'];
+      tabs.forEach(t => {
+        document.getElementById(t).classList.add('hidden');
+        document.getElementById('btn-' + t).classList.remove('active-tab');
+      });
+      document.getElementById(tabId).classList.remove('hidden');
+      document.getElementById('btn-' + tabId).classList.add('active-tab');
+    }
+
+    // INIT CHARTS ON WINDOW LOAD
+    window.onload = function() {
+      // 1. DONUT CHART
+      const ctxDonut = document.getElementById('donutChart').getContext('2d');
+      new Chart(ctxDonut, {
+        type: 'doughnut',
+        data: {
+          labels: ['Freight-Sensitive (44.8%)', 'Satisfied Mainstream (46.7%)', 'VIP Champions (3.0%)', 'At-Risk Delivery (5.5%)'],
+          datasets: [{
+            data: [41790, 43602, 2775, 5183],
+            backgroundColor: ['#FF9F43', '#10AC84', '#5F27CD', '#EE5253'],
+            borderWidth: 2,
+            borderColor: '#ffffff'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } }
+          },
+          cutout: '65%'
+        }
+      });
+
+      // 2. BAR CHART
+      const ctxBar = document.getElementById('barCompareChart').getContext('2d');
+      new Chart(ctxBar, {
+        type: 'bar',
+        data: {
+          labels: ['Freight-Sensitive', 'Mainstream', 'VIP Champions', 'At-Risk Delivery'],
+          datasets: [
+            {
+              label: 'Chi tiêu TB (BRL)',
+              data: [63.23, 251.95, 309.22, 179.94],
+              backgroundColor: ['#FF9F43', '#10AC84', '#5F27CD', '#EE5253'],
+              borderRadius: 6
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { beginAtZero: true, title: { display: true, text: 'Giá trị đơn TB (BRL)' } }
+          }
+        }
+      });
+
+      // 3. RADAR CHART
+      const ctxRadar = document.getElementById('radarChart').getContext('2d');
+      new Chart(ctxRadar, {
+        type: 'radar',
+        data: {
+          labels: ['Chi tiêu (Monetary)', 'Tần suất (Frequency)', 'Điểm Review', 'Đúng hạn (On-time)', 'Tiết kiệm Ship', 'Tốc độ giao'],
+          datasets: [
+            {
+              label: 'Freight-Sensitive',
+              data: [20, 48, 87, 97, 30, 85],
+              borderColor: '#FF9F43',
+              backgroundColor: 'rgba(255, 159, 67, 0.2)',
+              borderWidth: 2
+            },
+            {
+              label: 'Mainstream',
+              data: [81, 48, 85, 97, 90, 80],
+              borderColor: '#10AC84',
+              backgroundColor: 'rgba(16, 172, 132, 0.2)',
+              borderWidth: 2
+            },
+            {
+              label: 'VIP Champions',
+              data: [100, 100, 85, 94, 60, 78],
+              borderColor: '#5F27CD',
+              backgroundColor: 'rgba(95, 39, 205, 0.2)',
+              borderWidth: 2
+            },
+            {
+              label: 'At-Risk Delivery',
+              data: [58, 48, 39, 0, 55, 10],
+              borderColor: '#EE5253',
+              backgroundColor: 'rgba(238, 82, 83, 0.2)',
+              borderWidth: 2
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            r: {
+              suggestedMin: 0,
+              suggestedMax: 100,
+              ticks: { display: false }
+            }
+          },
+          plugins: {
+            legend: { display: false }
+          }
+        }
+      });
+    };
+
+    // SAMPLE CUSTOMER DATA FOR LOOKUP
+    const sampleData = {
+      cust_vip: {
+        id: "8d50f5eadf50201ccdcedfb9e2ac8455",
+        badge: "💎 Cụm 2: VIP Champions",
+        badgeBg: "bg-purple-100 text-[#5F27CD]",
+        loc: "Bang: SP (São Paulo)",
+        monetary: "890.00 BRL",
+        freq: "3 đơn hàng",
+        delivery: "11.0 ngày",
+        review: "5.0 ⭐ (Hài lòng)",
+        reviewColor: "text-emerald-600",
+        score: "95/100",
+        status: "Tuyệt vời",
+        statusColor: "text-emerald-600",
+        barColor: "bg-[#5F27CD]",
+        action: "Gửi quà tri ân Olist Prime VIP kèm mã giảm giá độc quyền cho sự kiện mua sắm cuối tuần."
+      },
+      cust_main: {
+        id: "0a517e4bb02bf6e1151fd848eb30097f",
+        badge: "🛒 Cụm 1: Satisfied Mainstream",
+        badgeBg: "bg-emerald-100 text-[#10AC84]",
+        loc: "Bang: RJ (Rio de Janeiro)",
+        monetary: "250.00 BRL",
+        freq: "1 đơn hàng",
+        delivery: "8.5 ngày",
+        review: "5.0 ⭐ (Hài lòng)",
+        reviewColor: "text-emerald-600",
+        score: "85/100",
+        status: "Ổn định",
+        statusColor: "text-emerald-600",
+        barColor: "bg-[#10AC84]",
+        action: "Kích hoạt chiến dịch Email cá nhân hóa gợi ý các phụ kiện liên quan đến sản phẩm đã mua."
+      },
+      cust_freight: {
+        id: "35d2524a8ab830f7b0a709088629009a",
+        badge: "📦 Cụm 0: Freight-Sensitive",
+        badgeBg: "bg-amber-100 text-[#FF9F43]",
+        loc: "Bang: MG (Belo Horizonte)",
+        monetary: "45.00 BRL",
+        freq: "1 đơn hàng",
+        delivery: "10.0 ngày",
+        review: "4.0 ⭐ (Khá)",
+        reviewColor: "text-emerald-600",
+        score: "68/100",
+        status: "Cần kích thích",
+        statusColor: "text-amber-600",
+        barColor: "bg-[#FF9F43]",
+        action: "Gửi mã FreeShip áp dụng cho đơn kế tiếp từ 79 BRL để xóa bỏ rào cản chi phí vận chuyển."
+      },
+      cust_risk: {
+        id: "72e617d3b5b3e7e0081bb87f48b0a1d4",
+        badge: "⚠️ Cụm 3: At-Risk Delivery",
+        badgeBg: "bg-rose-100 text-[#EE5253]",
+        loc: "Bang: BA (Salvador)",
+        monetary: "185.00 BRL",
+        freq: "1 đơn hàng",
+        delivery: "42.0 ngày (Trễ 15 ngày)",
+        review: "1.0 ⭐ (Chạm đáy)",
+        reviewColor: "text-rose-600",
+        score: "20/100",
+        status: "Rủi ro cực cao",
+        statusColor: "text-rose-600",
+        barColor: "bg-[#EE5253]",
+        action: "Đội ngũ CSKH liên hệ trực tiếp xin lỗi, hoàn trả một phần chi phí và tặng voucher bồi hoàn 40 BRL."
+      }
+    };
+
+    function loadSampleCustomer(key) {
+      const c = sampleData[key];
+      if (!c) return;
+      document.getElementById('cardCustId').innerText = "ID: " + c.id;
+      document.getElementById('inputCustId').value = c.id;
+      document.getElementById('custBadge').className = c.badgeBg + " px-3 py-1 rounded-full text-xs font-bold";
+      document.getElementById('custBadge').innerText = c.badge;
+      document.getElementById('custLocation').innerText = c.loc;
+      document.getElementById('cardMonetary').innerText = c.monetary;
+      document.getElementById('cardFreq').innerText = c.freq;
+      document.getElementById('cardDelivery').innerText = c.delivery;
+      document.getElementById('cardReview').innerText = c.review;
+      document.getElementById('cardReview').className = "text-base " + c.reviewColor;
+      document.getElementById('cardScoreNum').innerText = c.score;
+      document.getElementById('cardStatus').innerText = c.status;
+      document.getElementById('cardStatus').className = "font-bold " + c.statusColor;
+      document.getElementById('cardProgressBar').className = "h-2.5 rounded-full " + c.barColor;
+      document.getElementById('cardProgressBar').style.width = c.score.split('/')[0] + "%";
+      document.getElementById('cardAction').innerText = c.action;
+    }
+
+    function searchCustomCustomer() {
+      const id = document.getElementById('inputCustId').value.trim();
+      if (!id) return;
+      // Default to generic search simulation
+      document.getElementById('cardCustId').innerText = "ID: " + id;
+      document.getElementById('custBadge').className = "bg-emerald-100 text-[#10AC84] px-3 py-1 rounded-full text-xs font-bold";
+      document.getElementById('custBadge').innerText = "🛒 Cụm 1: Satisfied Mainstream";
+      document.getElementById('cardMonetary').innerText = "215.40 BRL";
+      document.getElementById('cardFreq').innerText = "1 đơn hàng";
+      document.getElementById('cardDelivery').innerText = "11.2 ngày";
+      document.getElementById('cardReview').innerText = "4.5 ⭐";
+      document.getElementById('cardScoreNum').innerText = "82/100";
+      document.getElementById('cardStatus').innerText = "Khách Hàng Tốt";
+      document.getElementById('cardProgressBar').style.width = "82%";
+      document.getElementById('cardAction').innerText = "Gợi ý tham gia chương trình tích lũy điểm và áp dụng mã giảm 5% cho lần mua tới.";
+    }
+
+    // LIVE ML CLASSIFICATION
+    function runClassification() {
+      const monetary = parseFloat(document.getElementById('mlMonetary').value);
+      const freq = parseInt(document.getElementById('mlFreq').value);
+      const delivery = parseFloat(document.getElementById('mlDelivery').value);
+      const freight = parseFloat(document.getElementById('mlFreight').value);
+      const isDelay = document.getElementById('mlDelay').value === "1";
+      const review = parseFloat(document.getElementById('mlReview').value);
+
+      const box = document.getElementById('mlResultBox');
+      box.classList.remove('hidden');
+
+      // Rule-based classification mimicking K-Means clusters
+      if (isDelay || delivery > 25 || review <= 2.0) {
+        // Cụm 3: At-Risk
+        box.className = "mt-6 p-5 rounded-xl border border-rose-300 bg-rose-50";
+        document.getElementById('mlResultIcon').innerText = "⚠️";
+        document.getElementById('mlResultTitle').innerText = "Cụm 3: At-Risk Delivery (Rủi ro Giao hàng trễ)";
+        document.getElementById('mlResultDesc').innerText = "Độ tin cậy: 94.8% • Khách hàng đang có nguy cơ rời bỏ nền tảng do trải nghiệm chậm trễ.";
+        document.getElementById('mlResultMarketing').innerText = "Gửi thư xin lỗi ngay lập tức kèm mã bồi hoàn 30-50 BRL để cứu vãn mối quan hệ.";
+      } else if (freq >= 2 || monetary >= 500) {
+        // Cụm 2: VIP
+        box.className = "mt-6 p-5 rounded-xl border border-purple-300 bg-purple-50";
+        document.getElementById('mlResultIcon').innerText = "💎";
+        document.getElementById('mlResultTitle').innerText = "Cụm 2: VIP Champions (Chi tiêu cao & Trung thành)";
+        document.getElementById('mlResultDesc').innerText = "Độ tin cậy: 96.2% • Khách hàng giá trị cao mang lại doanh thu vượt trội.";
+        document.getElementById('mlResultMarketing').innerText = "Kích hoạt thẻ đặc quyền Olist Prime VIP và hỗ trợ kênh hotline ưu tiên 24/7.";
+      } else if (freight >= 25 || monetary <= 90) {
+        // Cụm 0: Freight-Sensitive
+        box.className = "mt-6 p-5 rounded-xl border border-amber-300 bg-amber-50";
+        document.getElementById('mlResultIcon').innerText = "📦";
+        document.getElementById('mlResultTitle').innerText = "Cụm 0: Freight-Sensitive (Nhạy cảm Phí vận chuyển)";
+        document.getElementById('mlResultDesc').innerText = "Độ tin cậy: 89.5% • Khách hàng hài lòng về thời gian nhưng chịu tỷ lệ phí ship cao.";
+        document.getElementById('mlResultMarketing').innerText = "Tặng voucher FreeShip đơn từ 99 BRL hoặc khuyến khích mua combo cùng gian hàng.";
+      } else {
+        // Cụm 1: Mainstream
+        box.className = "mt-6 p-5 rounded-xl border border-emerald-300 bg-emerald-50";
+        document.getElementById('mlResultIcon').innerText = "🛒";
+        document.getElementById('mlResultTitle').innerText = "Cụm 1: Satisfied Mainstream (Khách hàng Phổ thông Hài lòng)";
+        document.getElementById('mlResultDesc').innerText = "Độ tin cậy: 92.0% • Khách hàng hài lòng tuyệt đối với quy trình giao nhận bình thường.";
+        document.getElementById('mlResultMarketing').innerText = "Chăm sóc định kỳ qua Email Marketing và khuyến mãi quà tặng sinh nhật.";
+      }
+    }
+
+    // WHAT-IF SIMULATION LOGIC
+    function updateSimulation() {
+      const discount = parseInt(document.getElementById('sliderDiscount').value);
+      const sla = parseInt(document.getElementById('sliderSLA').value);
+
+      document.getElementById('sliderValDiscount').innerText = discount + "%";
+      document.getElementById('sliderValSLA').innerText = sla + " ngày";
+
+      const convertedCount = Math.round(41790 * (discount * 0.006));
+      const savedCount = Math.round(5183 * Math.min(0.70, (sla / 15.0) * 0.65));
+      const csatGain = (discount * 0.005 + sla * 0.035).toFixed(2);
+      const newCsat = Math.min(5.0, (4.15 + parseFloat(csatGain))).toFixed(2);
+      const revenue = Math.round(convertedCount * 150.0 + savedCount * 179.94);
+
+      document.getElementById('simConverted').innerText = "+" + convertedCount.toLocaleString() + " khách";
+      document.getElementById('simSaved').innerText = "+" + savedCount.toLocaleString() + " khách";
+      document.getElementById('simCSAT').innerText = newCsat + " ⭐";
+      document.getElementById('simRevenue').innerText = "+" + revenue.toLocaleString() + " BRL";
+    }
+  </script>
+</body>
+</html>
